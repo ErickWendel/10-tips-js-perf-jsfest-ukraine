@@ -1,15 +1,22 @@
-// node -p "Buffer.allocUnsafe(666e6).toString()" >
-//  b.txt
-
-const { createReadStream } = require("fs");
-const randomReadStream = createReadStream("/dev/urandom");
+/*
+node -p "Buffer.allocUnsafe(666e6).toString()" >  big.file
+*/
+const {
+  readFileSync,
+  createReadStream,
+  promises: { stat, readFile }
+} = require("fs");
+const randomReadStream = createReadStream("./big.file");
 
 let dataRead = 0;
 (async () => {
+  const { size } = await stat("./big.file");
+  console.log("the file size is", formatBytes(size));
   for await (const chunk of randomReadStream) {
-    console.log(`Chunk: ${chunk}`);
+    console.log(`An empty line was read at ${new Date().toISOString()}`);
     dataRead += chunk.length;
   }
+  console.log("Data read", formatBytes(dataRead));
 })();
 
 process.on("SIGINT", () => {
